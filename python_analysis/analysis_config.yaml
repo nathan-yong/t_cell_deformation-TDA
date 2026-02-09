@@ -1,1 +1,27 @@
-experiment_directory: "../experiment_data/variable_frequency/"
+# Directory Configs
+target_experiment_directory: "../experiment_data/variable_frequency/"
+
+# Data Configs
+number_of_experiment_variables: 14 # whatever variable we are observing
+number_of_particles: 100
+number_of_timestampes: 300
+include_apc: true
+skip_init_frame: true
+
+# Analysis configs
+alpha_complexes_with_particle_coords: true
+alpha_complexes_with_random_points: false
+edt_homcloud: false
+clustering: false
+
+# alpha_complexes_with_particle_coords configs
+ac_particles_coords_distance_measure: true
+
+# alpha_complexes_with_random_points configs
+ac_random_number_of_random_points: 100
+ac_random_distance_measure: true
+
+# edt_homcloud configs
+edt_homcloud_distance_measure: true
+
+# clustering configs

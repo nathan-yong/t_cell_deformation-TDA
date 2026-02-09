@@ -3,8 +3,9 @@ target_experiment_directory: "../experiment_data/variable_frequency/"
 
 # Data Configs
 number_of_experiment_variables: 14 # whatever variable we are observing
-number_of_particles: 100
-number_of_timestampes: 300
+number_of_particles: 100 # Particles including APC
+number_of_timestampes: 30 # Number of time steps in a simulation typically given by t_final / write_every
+number_of_realizations: 10 # Number of realizations for each experiment variable
 include_apc: true
 skip_init_frame: true
 

@@ -8,35 +8,47 @@ from utils.data_reader import read_particle_data
 from tda.alpha_complexes import one_realization
 
 def main():
-  NUM_FREQUENCIES = 14
-  NUM_TIME_STEPS = 30   # t_final / (dt * write_every)
-  NUM_PARTICLES = 300   # Particles including APC
-  NUM_PARTICLE_DATA = 6
-  NUM_REALIZATIONS = 10
-  INCLUDE_APC = True
-  SKIP_INIT_FRAME = True
-
-  # Save data into memory (not used currently)
-  configs = np.empty(NUM_FREQUENCIES, dtype='object')
-
-  # Save list of frequencies for graphing
-  frequency_list = np.empty(NUM_FREQUENCIES)
-
-  # Measures
-  dist_measure_dim0_list = np.empty(NUM_FREQUENCIES)
-  dist_measure_dim1_list = np.empty(NUM_FREQUENCIES)
-
-  # Runtime progress bar
-  total_realizations = NUM_FREQUENCIES * NUM_REALIZATIONS
-  rbar = tqdm(total=total_realizations)
+  NUM_EXPERIMENT_VARIABLES = 0
+  NUM_TIMESTAMPS = 0   # t_final / (dt * write_every)
+  NUM_PARTICLES = 0   # Particles including APC
+  NUM_REALIZATIONS = 0
   
   # Get yaml configs
+  analysis_config = {}
   dirname = os.path.dirname(__file__)
   data_dir = ""
   with open(os.path.join(dirname, 'analysis_config.yaml')) as f:
     analysis_config = yaml.safe_load(f)
-    data_dir = analysis_config['experiment_directory']
+    try:
+      NUM_EXPERIMENT_VARIABLES = analysis_config['number_of_experiment_variables']
+      NUM_TIMESTAMPS = analysis_config['number_of_timestampes']
+      NUM_PARTICLES = analysis_config['number_of_particles']
+      NUM_REALIZATIONS = analysis_config['number_of_realizations']
+      data_dir = analysis_config['target_experiment_directory']
+    except KeyError as e:
+      print(f"Missing key in analysis_config.yaml: {e}")
+      return
   data_dir = os.path.abspath(os.path.join(dirname, data_dir))
+  
+  # Whether to include the apc tda calculations
+  INCLUDE_APC = True
+  SKIP_INIT_FRAME = True
+
+  # Save data into memory (not used currently)
+  configs = np.empty(NUM_EXPERIMENT_VARIABLES, dtype='object')
+
+  # Save list of frequencies for graphing
+  frequency_list = np.empty(NUM_EXPERIMENT_VARIABLES)
+
+  # Measures
+  dist_measure_dim0_list = np.empty(NUM_EXPERIMENT_VARIABLES)
+  dist_measure_dim1_list = np.empty(NUM_EXPERIMENT_VARIABLES)
+
+  # Runtime progress bar
+  total_realizations = NUM_EXPERIMENT_VARIABLES * NUM_REALIZATIONS
+  rbar = tqdm(total=total_realizations)
+  
+  
 
   # Iterator
   frequency_iterator = 0
@@ -58,8 +70,8 @@ def main():
               frequency_list[frequency_iterator] = data['frequency']
 
 
-          # positions[index_iterator] = read_particle_data(os.path.join(data_dir, dir.name, 'Results.txt'), NUM_PARTICLES, NUM_TIME_STEPS, include_apc=True)
-          realization_data = read_particle_data(os.path.join(data_dir, dir.name, sample.name, 'Results.txt'), NUM_PARTICLES, NUM_TIME_STEPS, include_apc=True)
+          # positions[index_iterator] = read_particle_data(os.path.join(data_dir, dir.name, 'Results.txt'), NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=True)
+          realization_data = read_particle_data(os.path.join(data_dir, dir.name, sample.name, 'Results.txt'), NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=True)
           dim0_dist_measure, dim1_dist_measure = one_realization(realization_data)
           means_dim0_dist[realization_iterator] = dim0_dist_measure
           means_dim1_dist[realization_iterator] = dim1_dist_measure

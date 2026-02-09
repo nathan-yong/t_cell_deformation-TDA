@@ -1,7 +1,7 @@
 # Set Up Python Analysis Program (Linux)
 ### Python Version 3.12
 
-If you don't have `venv`
+If you don't have `venv`. Note that if you're default python version isn't 3.12. You may have to install python 3.12 and ensure venv is using python 3.12.
 ```
 sudo apt update
 sudo apt install python3-venv

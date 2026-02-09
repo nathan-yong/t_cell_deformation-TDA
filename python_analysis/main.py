@@ -1,8 +1,7 @@
-import numpy as np
-
 def main():
-    print("Hello World")
-    print(type(np.array([0.343, 0.117])))
+    import alpha_complexes_colab
+    alpha_complexes_colab.run()
+    
 
 
 

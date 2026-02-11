@@ -12,6 +12,8 @@ def main():
   NUM_TIMESTAMPS = 0   # t_final / (dt * write_every)
   NUM_PARTICLES = 0   # Particles including APC
   NUM_REALIZATIONS = 0
+  INCLUDE_APC = True
+  SKIP_INIT_FRAME = True
   
   # Get yaml configs
   analysis_config = {}
@@ -24,18 +26,13 @@ def main():
       NUM_TIMESTAMPS = analysis_config['number_of_timestampes']
       NUM_PARTICLES = analysis_config['number_of_particles']
       NUM_REALIZATIONS = analysis_config['number_of_realizations']
+      INCLUDE_APC = analysis_config['include_apc']
+      SKIP_INIT_FRAME = analysis_config['skip_init_frame']
       data_dir = analysis_config['target_experiment_directory']
     except KeyError as e:
       print(f"Missing key in analysis_config.yaml: {e}")
       return
   data_dir = os.path.abspath(os.path.join(dirname, data_dir))
-  
-  # Whether to include the apc tda calculations
-  INCLUDE_APC = True
-  SKIP_INIT_FRAME = True
-
-  # Save data into memory (not used currently)
-  configs = np.empty(NUM_EXPERIMENT_VARIABLES, dtype='object')
 
   # Save list of frequencies for graphing
   frequency_list = np.empty(NUM_EXPERIMENT_VARIABLES)
@@ -69,8 +66,6 @@ def main():
               data = yaml.safe_load(f)
               frequency_list[frequency_iterator] = data['frequency']
 
-
-          # positions[index_iterator] = read_particle_data(os.path.join(data_dir, dir.name, 'Results.txt'), NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=True)
           realization_data = read_particle_data(os.path.join(data_dir, dir.name, sample.name, 'Results.txt'), NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=True)
           dim0_dist_measure, dim1_dist_measure = one_realization(realization_data)
           means_dim0_dist[realization_iterator] = dim0_dist_measure

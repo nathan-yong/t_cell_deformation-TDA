@@ -49,29 +49,32 @@ def main():
 
   # Iterator
   frequency_iterator = 0
-  with os.scandir(data_dir) as experiments:
-    for dir in experiments:
+  with os.scandir(data_dir) as experiment:
+    for experiment_sample in experiment:
 
       # Accumulate means across realizations
       means_dim0_dist = np.empty(NUM_REALIZATIONS)
       means_dim1_dist = np.empty(NUM_REALIZATIONS)
       realization_iterator = 0
       is_yaml_retrieved = False
-      with os.scandir(dir) as realizations:
-        for sample in realizations:
-
+      with os.scandir(experiment_sample) as realizations:
+        for realization_sample in realizations:
+          # Create analyses directory if it doesn't exist
+          analyses_dir = os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'analyses')
+          
           if not is_yaml_retrieved:
             is_yaml_retrieved = True
-            with open(os.path.join(data_dir, dir.name, sample.name, 'config.yaml')) as f:
+            with open(os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'config.yaml')) as f:
               data = yaml.safe_load(f)
               frequency_list[frequency_iterator] = data['frequency']
 
-          realization_data = read_particle_data(os.path.join(data_dir, dir.name, sample.name, 'Results.txt'), 
+          realization_data = read_particle_data(os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'Results.txt'), 
                                                 NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=INCLUDE_APC, 
                                                 SKIP_INIT_FRAME=SKIP_INIT_FRAME)
           if analysis_config['alpha_complexes_with_particle_coords']:
             # Function should return one np array of size (NUM_TIMESTAMPS, 2) for each dimension.
-            dim0_dist_measure, dim1_dist_measure = one_realization(realization_data)
+            dim0_dist_measure, dim1_dist_measure = one_realization(realization_data) # TODO: convert function
+            # print data into file
             means_dim0_dist[realization_iterator] = dim0_dist_measure
             means_dim1_dist[realization_iterator] = dim1_dist_measure
 

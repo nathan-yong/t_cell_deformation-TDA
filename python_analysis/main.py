@@ -66,10 +66,14 @@ def main():
               data = yaml.safe_load(f)
               frequency_list[frequency_iterator] = data['frequency']
 
-          realization_data = read_particle_data(os.path.join(data_dir, dir.name, sample.name, 'Results.txt'), NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=True)
-          dim0_dist_measure, dim1_dist_measure = one_realization(realization_data)
-          means_dim0_dist[realization_iterator] = dim0_dist_measure
-          means_dim1_dist[realization_iterator] = dim1_dist_measure
+          realization_data = read_particle_data(os.path.join(data_dir, dir.name, sample.name, 'Results.txt'), 
+                                                NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=INCLUDE_APC, 
+                                                SKIP_INIT_FRAME=SKIP_INIT_FRAME)
+          if analysis_config['alpha_complexes_with_particle_coords']:
+            # Function should return one np array of size (NUM_TIMESTAMPS, 2) for each dimension.
+            dim0_dist_measure, dim1_dist_measure = one_realization(realization_data)
+            means_dim0_dist[realization_iterator] = dim0_dist_measure
+            means_dim1_dist[realization_iterator] = dim1_dist_measure
 
           realization_iterator += 1
 

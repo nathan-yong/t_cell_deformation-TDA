@@ -58,3 +58,6 @@ def one_realization(data_with_all_frames):
 
 
   return np.mean(dim0_dist_measures), np.mean(dim1_dist_measures)
+
+def alpha_complexes_with_particle_coords(data_with_all_frames):
+  return one_realization(data_with_all_frames)

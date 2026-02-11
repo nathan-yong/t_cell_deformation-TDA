@@ -42,8 +42,6 @@ def dist_measure_one_frame(dim0, dim1):
 def one_frame_cell_points(data_for_one_frame):
   coord_data = data_for_one_frame[:, 1:3]
   dim0, dim1 = calculate_alpha_complex_pd(coord_data)
-  # print(dim0.shape)
-  # print(dim1.shape)
   dim0_dist_measure, dim1_dist_measure = dist_measure_one_frame(dim0, dim1)
   return dim0_dist_measure, dim1_dist_measure
 

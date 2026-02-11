@@ -1,25 +1,32 @@
 import numpy as np
 
-def read_particle_data(file_path, num_particles, number_of_time_steps, include_apc=True, skip_init_frame=False):
+def read_particle_data(file_path, num_particles, number_of_timestamps, include_apc=True, skip_init_frame=False):
   """
   Read the particle data from a target file.
 
   Args:
       file_path: Res particle data target file.
       num_particles: Number of particles in the simulation including the apc.
-      number_of_time_steps: Number of time steps in a simulation typically given by t_final / write_every.
+      number_of_timestamps: Number of time steps in a simulation typically given by t_final / write_every.
       include_apc: Default True. Will add the apc to each time snapshot.
 
   Returns:
-      3D array of shape (number_of_time_steps (+ 1), num_particles, NUM_DATA_PER_PARTICLE).
+      3D array of shape (number_of_timestamps (+ 1), num_particles, NUM_DATA_PER_PARTICLE).
   """
   NUM_DATA_PER_PARTICLE = 6
-  time_step_array = np.empty((number_of_time_steps + 1, num_particles, NUM_DATA_PER_PARTICLE))
-    # each entry holds a num_particles by NUM_DATA_PER_PARTICLE shaped array
-    # which in turn holds all the particle information
+  time_step_array = np.empty()
+  
+  true_num_particles = num_particles
+  true_num_timestamps = number_of_timestamps
+  
+  # Set size of array based on whether to include apc and whether to skip initial frame
   if not include_apc:
-    time_step_array = np.empty((number_of_time_steps + 1, num_particles - 1, NUM_DATA_PER_PARTICLE))
-  time_step_labels = []
+    true_num_particles = num_particles - 1
+  if not skip_init_frame:
+    true_num_timestamps = number_of_timestamps + 1
+
+  time_step_array = np.empty((true_num_timestamps, true_num_particles, NUM_DATA_PER_PARTICLE))
+  
   apc_coord_and_radius = np.empty(3)
   apc_cell_recorded = False
 
@@ -38,7 +45,6 @@ def read_particle_data(file_path, num_particles, number_of_time_steps, include_a
           if current_particle_index != 0:
             index_iter += 1
           current_particle_index = 0
-          time_step_labels.append(float(line_split[1]))
         elif not apc_cell_recorded and line[0] == '1':
           apc_cell_recorded = True
           apc_coord_and_radius[0] = float(line_split[1]) # x
@@ -65,7 +71,6 @@ def read_particle_data(file_path, num_particles, number_of_time_steps, include_a
           if current_particle_index != 0:
             index_iter += 1
           current_particle_index = 0
-          time_step_labels.append(float(line_split[1]))
         else:
           time_step_array[index_iter][current_particle_index][0] = float(line_split[0])
           time_step_array[index_iter][current_particle_index][1] = float(line_split[1])

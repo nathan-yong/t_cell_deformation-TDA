@@ -5,7 +5,7 @@ import yaml
 
 # Local imports
 from utils.data_reader import read_particle_data
-from tda.alpha_complexes import one_realization
+from tda.alpha_complexes import alpha_complexes_with_particle_coords
 
 def main():
   NUM_EXPERIMENT_VARIABLES = 0
@@ -23,7 +23,7 @@ def main():
     analysis_config = yaml.safe_load(f)
     try:
       NUM_EXPERIMENT_VARIABLES = analysis_config['number_of_experiment_variables']
-      NUM_TIMESTAMPS = analysis_config['number_of_timestampes']
+      NUM_TIMESTAMPS = analysis_config['number_of_timestamps']
       NUM_PARTICLES = analysis_config['number_of_particles']
       NUM_REALIZATIONS = analysis_config['number_of_realizations']
       INCLUDE_APC = analysis_config['include_apc']
@@ -58,11 +58,8 @@ def main():
     for experiment_sample in experiment:
 
       # Accumulate means across realizations
-      means_dim0_dist = np.empty(NUM_REALIZATIONS)
-      means_dim1_dist = np.empty(NUM_REALIZATIONS)
       realization_iterator = 0
       is_yaml_retrieved = False
-      
       experiment_sample_analyses_dir = os.path.join(data_dir, experiment_sample.name, 'analyses')
       if not os.path.exists(experiment_sample_analyses_dir):
           os.makedirs(experiment_sample_analyses_dir)
@@ -85,18 +82,13 @@ def main():
                                                 NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=INCLUDE_APC, 
                                                 SKIP_INIT_FRAME=SKIP_INIT_FRAME)
           if analysis_config['alpha_complexes_with_particle_coords']:
-            # Function should return one np array of size (NUM_TIMESTAMPS, 2) for each dimension.
-            dim0_dist_measure, dim1_dist_measure = one_realization(realization_data) # TODO: convert function
-            # print data into file
-            means_dim0_dist[realization_iterator] = dim0_dist_measure
-            means_dim1_dist[realization_iterator] = dim1_dist_measure
-
+            alpha_complexes_with_particle_coords(realization_data)
+            # print to experiment_sample_analyses_dir. Copy the files created by function.
           realization_iterator += 1
 
           rbar.update(1)
 
-      dist_measure_dim0_list[frequency_iterator] = np.mean(means_dim0_dist)
-      dist_measure_dim1_list[frequency_iterator] = np.mean(means_dim1_dist)
+      # print to experiment_analyses_dir. Average across realizations for this frequency and save to list for graphing.
 
       frequency_iterator+=1
 

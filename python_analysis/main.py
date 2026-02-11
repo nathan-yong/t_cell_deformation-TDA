@@ -37,15 +37,9 @@ def main():
   # Save list of frequencies for graphing
   frequency_list = np.empty(NUM_EXPERIMENT_VARIABLES)
 
-  # Measures
-  dist_measure_dim0_list = np.empty(NUM_EXPERIMENT_VARIABLES)
-  dist_measure_dim1_list = np.empty(NUM_EXPERIMENT_VARIABLES)
-
   # Runtime progress bar
   total_realizations = NUM_EXPERIMENT_VARIABLES * NUM_REALIZATIONS
   rbar = tqdm(total=total_realizations)
-  
-  
 
   # Iterator
   frequency_iterator = 0
@@ -56,6 +50,8 @@ def main():
   
   with os.scandir(data_dir) as experiment:
     for experiment_sample in experiment:
+      if experiment_sample.name == 'analyses':
+        continue
 
       # Accumulate means across realizations
       realization_iterator = 0
@@ -66,29 +62,29 @@ def main():
           
       
       with os.scandir(experiment_sample) as realizations:
+        if experiment_sample.name == 'analyses':
+          continue
         for realization_sample in realizations:
+          if realization_sample.name == 'analyses':
+            continue 
           # Create analyses directory if it doesn't exist
           realization_analyses_dir = os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'analyses')
           if not os.path.exists(realization_analyses_dir):
               os.makedirs(realization_analyses_dir)
-          
-          if not is_yaml_retrieved:
-            is_yaml_retrieved = True
-            with open(os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'config.yaml')) as f:
-              data = yaml.safe_load(f)
-              frequency_list[frequency_iterator] = data['frequency']
 
           realization_data = read_particle_data(os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'Results.txt'), 
                                                 NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=INCLUDE_APC, 
-                                                SKIP_INIT_FRAME=SKIP_INIT_FRAME)
+                                                skip_init_frame=SKIP_INIT_FRAME)
+          
+          # Deploy all methods selected in the analysis_config
           if analysis_config['alpha_complexes_with_particle_coords']:
-            alpha_complexes_with_particle_coords(realization_data)
+            alpha_complexes_with_particle_coords(realization_data, realization_analyses_dir, analysis_config['timestamp_difference'], SKIP_INIT_FRAME)
             # print to experiment_sample_analyses_dir. Copy the files created by function.
           realization_iterator += 1
 
           rbar.update(1)
 
-      # print to experiment_analyses_dir. Average across realizations for this frequency and save to list for graphing.
+      # print to experiment_analyses_dir. Copy realization file.
 
       frequency_iterator+=1
 

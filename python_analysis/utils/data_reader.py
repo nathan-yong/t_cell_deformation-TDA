@@ -14,7 +14,7 @@ def read_particle_data(file_path, num_particles, number_of_timestamps, include_a
       3D array of shape (number_of_timestamps (+ 1), num_particles, NUM_DATA_PER_PARTICLE).
   """
   NUM_DATA_PER_PARTICLE = 6
-  timestamp_array = np.empty()
+  timestamp_array = None
   
   true_num_particles = num_particles
   true_num_timestamps = number_of_timestamps
@@ -44,7 +44,7 @@ def read_particle_data(file_path, num_particles, number_of_timestamps, include_a
 
         # Start processing line
         if line[0] == 't':
-          if not is_first_frame_skipped and not int(line_split[1]) == 0:
+          if not is_first_frame_skipped and not float(line_split[1]) == 0.0:
             is_first_frame_skipped = True
           if current_particle_index != 0:
             timestamp_index += 1
@@ -72,7 +72,7 @@ def read_particle_data(file_path, num_particles, number_of_timestamps, include_a
 
         # Start processing line
         if line[0] == 't':
-          if not is_first_frame_skipped and not int(line_split[1]) == 0:
+          if not is_first_frame_skipped and not float(line_split[1]) == 0.0:
             is_first_frame_skipped = True
             continue
           if current_particle_index != 0:

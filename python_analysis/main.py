@@ -49,6 +49,11 @@ def main():
 
   # Iterator
   frequency_iterator = 0
+  
+  experiment_analyses_dir = os.path.join(data_dir, 'analyses')
+  if not os.path.exists(experiment_analyses_dir):
+      os.makedirs(experiment_analyses_dir)
+  
   with os.scandir(data_dir) as experiment:
     for experiment_sample in experiment:
 
@@ -57,10 +62,18 @@ def main():
       means_dim1_dist = np.empty(NUM_REALIZATIONS)
       realization_iterator = 0
       is_yaml_retrieved = False
+      
+      experiment_sample_analyses_dir = os.path.join(data_dir, experiment_sample.name, 'analyses')
+      if not os.path.exists(experiment_sample_analyses_dir):
+          os.makedirs(experiment_sample_analyses_dir)
+          
+      
       with os.scandir(experiment_sample) as realizations:
         for realization_sample in realizations:
           # Create analyses directory if it doesn't exist
-          analyses_dir = os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'analyses')
+          realization_analyses_dir = os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'analyses')
+          if not os.path.exists(realization_analyses_dir):
+              os.makedirs(realization_analyses_dir)
           
           if not is_yaml_retrieved:
             is_yaml_retrieved = True

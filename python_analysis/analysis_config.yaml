@@ -1,6 +1,9 @@
 # Directory Configs
 target_experiment_directory: "../experiment_data/variable_frequency/"
 
+# Name Configs
+experiment_name: "Variable_Frequency"
+
 # Data Configs
 number_of_experiment_variables: 14 # whatever variable we are observing
 number_of_particles: 300 # Particles including APC

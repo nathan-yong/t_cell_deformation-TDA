@@ -2,6 +2,7 @@ import numpy as np
 import gudhi as gd
 
 import utils.data_printer as data_printer
+import utils.progress_bar as progress_bar
 
 def calculate_alpha_complex_pd(coordinates):
   """
@@ -56,6 +57,7 @@ def alpha_complexes_with_particle_coords(data_with_all_frames, realization_analy
     dim0_dist_measure, dim1_dist_measure = one_frame_dist_measures(data_with_all_frames[i][:, 1:3])
     dim0_dist_measure_list.append(dim0_dist_measure)
     dim1_dist_measure_list.append(dim1_dist_measure)
+    progress_bar.increment_progress_bar(1)
   data_printer.print_realizaton('alpha_complexes_with_particle_coords_dim0.txt', dim0_dist_measure_list, realization_analyses_dir, timestamp_difference, is_first_frame_skipped)
   data_printer.print_realizaton('alpha_complexes_with_particle_coords_dim1.txt', dim1_dist_measure_list, realization_analyses_dir, timestamp_difference, is_first_frame_skipped)
   

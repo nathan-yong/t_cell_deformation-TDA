@@ -1,11 +1,12 @@
 import os
 import numpy as np
-from tqdm import tqdm
 import yaml
 
 # Local imports
+import utils.progress_bar as progress_bar
 from utils.data_reader import read_particle_data
 from tda.alpha_complexes import alpha_complexes_with_particle_coords
+
 
 def main():
   NUM_EXPERIMENT_VARIABLES = 0
@@ -37,9 +38,17 @@ def main():
   # Save list of frequencies for graphing
   frequency_list = np.empty(NUM_EXPERIMENT_VARIABLES)
 
+  num_analyses = 0
+  if analysis_config['alpha_complexes_with_particle_coords']:
+    num_analyses += 1
+
+  true_frame_count = NUM_TIMESTAMPS
+  if not SKIP_INIT_FRAME:
+    true_frame_count += 1
+
   # Runtime progress bar
-  total_realizations = NUM_EXPERIMENT_VARIABLES * NUM_REALIZATIONS
-  rbar = tqdm(total=total_realizations)
+  total = NUM_EXPERIMENT_VARIABLES * NUM_REALIZATIONS * true_frame_count * num_analyses
+  progress_bar.start_progress_bar(total)
 
   # Iterator
   frequency_iterator = 0
@@ -73,7 +82,9 @@ def main():
               os.makedirs(realization_analyses_dir)
 
           realization_data = read_particle_data(os.path.join(data_dir, experiment_sample.name, realization_sample.name, 'Results.txt'), 
-                                                NUM_PARTICLES, NUM_TIMESTAMPS, include_apc=INCLUDE_APC, 
+                                                NUM_PARTICLES, 
+                                                NUM_TIMESTAMPS, 
+                                                include_apc=INCLUDE_APC, 
                                                 skip_init_frame=SKIP_INIT_FRAME)
           
           # Deploy all methods selected in the analysis_config
@@ -82,15 +93,11 @@ def main():
             # print to experiment_sample_analyses_dir. Copy the files created by function.
           realization_iterator += 1
 
-          rbar.update(1)
-
       # print to experiment_analyses_dir. Copy realization file.
 
       frequency_iterator+=1
-
-
-  rbar.close()
-    
+  
+  progress_bar.stop_progress_bar()
 
 
 

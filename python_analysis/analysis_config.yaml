@@ -1,1 +1,32 @@
-experiment_directory: "../experiment_data/variable_frequency/"
+# Directory Configs
+target_experiment_directory: "../experiment_data/variable_frequency/"
+
+# Name Configs
+experiment_name: "Variable_Frequency"
+
+# Data Configs
+number_of_experiment_variables: 14 # whatever variable we are observing
+number_of_particles: 300 # Particles including APC
+number_of_timestamps: 30 # Number of time steps in a simulation typically given by t_final / write_every
+number_of_realizations: 10 # Number of realizations for each experiment variable
+include_apc: true
+skip_init_frame: true
+timestamp_difference: 50 # t difference between each timestamp
+
+# Method configs
+alpha_complexes_with_particle_coords: true
+alpha_complexes_with_random_points: false
+edt_homcloud: false
+clustering: false
+
+# alpha_complexes_with_particle_coords configs
+ac_particles_coords_distance_measure: true
+
+# alpha_complexes_with_random_points configs
+ac_random_number_of_random_points: 100
+ac_random_distance_measure: true
+
+# edt_homcloud configs
+edt_homcloud_distance_measure: true
+
+# clustering configs

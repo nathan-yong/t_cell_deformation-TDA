@@ -17,6 +17,7 @@ dragging = None
 simulation_size_L = 43.0
 num_particles_to_spawn = 10
 num_particles = 0
+usingFirstContactTimes = False
 
 
 def handle_mouse(e):
@@ -157,9 +158,13 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                             label="Upload Results.txt",
                         ).classes("w-full").props("accept=.txt")
 
+                        firstContactTimesCheckbox = ui.checkbox("Use First Contact Times").bind_value(globals(), "usingFirstContactTimes")
+
                         ui.upload(
                             on_upload=simulation_contacts_file_upload,
                             label="Upload First_contact_times.txt",
+                        ).bind_visibility_from(firstContactTimesCheckbox, "value"
                         ).classes("w-full").props("accept=.txt")
+
 
 ui.run()

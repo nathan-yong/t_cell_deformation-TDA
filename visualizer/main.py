@@ -15,7 +15,8 @@ next_id = 1
 dragging = None
 
 simulation_size_L = 43.0
-number_of_particles = 10
+num_particles_to_spawn = 10
+num_particles = 0
 
 
 def handle_mouse(e):
@@ -42,19 +43,20 @@ def handle_mouse(e):
         dragging = None
 
 
-def spawn_circles():
-    global next_id, circles, number_of_particles
-    number_of_particles = int(number_of_particles)
+def spawn_particles():
+    global next_id, circles, num_particles, num_particles_to_spawn
+    next_id = 1
     circles.clear()
+    num_particles_to_spawn = int(num_particles_to_spawn)
 
     average_radius = 1.0
-    n = int(np.sqrt(number_of_particles))
+    n = int(np.sqrt(num_particles_to_spawn))
     start_location = simulation_size_L / 2 - (n * average_radius)
     x = start_location
     y = start_location
     coord_step_size = average_radius * 2
     row_iterator = 0
-    for i in range(number_of_particles):
+    for i in range(num_particles_to_spawn):
         circles.append(
             {"id": next_id, "x": x, "y": y, "radius": average_radius, "color": "blue"}
         )
@@ -65,6 +67,19 @@ def spawn_circles():
             x = start_location
             y += coord_step_size
         next_id += 1
+
+    num_particles = len(circles)
+
+    update_image()
+
+def add_particle():
+    global next_id, circles, num_particles
+    
+    circles.append(
+        {"id": next_id, "x": simulation_size_L / 2, "y": simulation_size_L / 2, "radius": 1, "color": "blue"}
+    )
+    next_id += 1
+    num_particles = len(circles)
 
     update_image()
 
@@ -81,15 +96,19 @@ def update_image():
     # Generate SVG content based on the circles list
     content = ""
     for c in circles:
-        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="rgba(0, 0, 255, 0.7)" stroke="{c["color"]}" stroke-width="0.1" />'
+        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="rgba(0, 0, 255, 0.4)" stroke="{c["color"]}" stroke-width="0.1" />'
     ii.content = content
 
 
 # UI Layout
 with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
     with ui.column().classes("flex-[7] h-full items-center justify-center p-5"):
-        # The interactive image
-        # Note: 'crosshair' cursor helps with precision
+
+        with ui.row():
+            ui.label("Number of Particles: ")
+            ui.label().bind_text_from(globals(), "num_particles")
+
+        # Interactive Image Canvas
         ii = ui.interactive_image(
             size=(simulation_size_L, simulation_size_L),
             on_mouse=handle_mouse,
@@ -114,12 +133,16 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                             ui.label("Number of Particles").classes("font-bold")
                             ui.number(
                                 value=10, min=0, max=50, step=1, format="%i"
-                            ).bind_value(globals(), "number_of_particles")
+                            ).bind_value(globals(), "num_particles_to_spawn")
                             ui.slider(min=0, max=50, value=10).bind_value(
-                                globals(), "number_of_particles"
+                                globals(), "num_particles_to_spawn"
                             ).classes("w-full")
 
-                        ui.button("Spawn Circles", on_click=spawn_circles).classes(
+                        ui.button("Spawn Particles", on_click=spawn_particles).classes(
+                            "w-full py-2"
+                        ).props("elevated color=primary")
+                        
+                        ui.button("Add Particles", on_click=add_particle).classes(
                             "w-full py-2"
                         ).props("elevated color=primary")
 

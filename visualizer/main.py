@@ -1,5 +1,7 @@
-from nicegui import ui
+from nicegui import ui, events
 import numpy as np
+
+import utils.data_reader as data_reader
 
 # State to store our circles
 # [{
@@ -85,8 +87,11 @@ def add_particle():
     update_image()
 
 
-def simulation_results_file_upload(e):
-    print(e.file.name)
+async def simulation_results_file_upload(e: events.UploadEventArguments):
+    particle_data_string = await e.file.text()
+    particle_data, num_frames = data_reader.read_particle_data_from_string(particle_data_string)
+    print(particle_data)
+    print(num_frames)
 
 
 def simulation_contacts_file_upload(e):

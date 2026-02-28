@@ -69,6 +69,14 @@ def spawn_circles():
     update_image()
 
 
+def simulation_results_file_upload(e):
+    print(e.file.name)
+
+
+def simulation_contacts_file_upload(e):
+    print(e.file.name)
+
+
 def update_image():
     # Generate SVG content based on the circles list
     content = ""
@@ -122,8 +130,13 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                         )
 
                         ui.upload(
-                            on_upload=lambda e: ui.notify(f"Uploaded {e.file.name}"),
+                            on_upload=simulation_results_file_upload,
                             label="Upload Results.txt",
-                        ).classes("w-full")
+                        ).classes("w-full").props("accept=.txt")
+
+                        ui.upload(
+                            on_upload=simulation_contacts_file_upload,
+                            label="Upload First_contact_times.txt",
+                        ).classes("w-full").props("accept=.txt")
 
 ui.run()

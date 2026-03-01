@@ -25,6 +25,7 @@ num_particles = 0
 # File upload
 usingFirstContactTimes = False
 num_frames = 0
+selected_frame = 0
 
 
 def handle_mouse(e):
@@ -105,9 +106,24 @@ async def simulation_results_file_upload(e: events.UploadEventArguments):
     particle_data, num_frames = data_reader.read_particle_data_from_string(
         particle_data_string
     )
-    print(particle_data)
-    print(num_frames)
+    display_loaded_frame()
 
+def display_loaded_frame():
+    global selected_frame, particle_data, next_id, circles, num_particles
+    circles.clear()
+    for p in particle_data[selected_frame]:
+        circles.append(
+            {
+                "id": p[0],
+                "x": p[1],
+                "y": p[2],
+                "radius": p[5],
+                "color": "blue",
+            }
+        )
+    next_id = max([c["id"] for c in circles]) + 1 
+    num_particles = len(circles)
+    update_image()
 
 def simulation_contacts_file_upload(e):
     print(e.file.name)

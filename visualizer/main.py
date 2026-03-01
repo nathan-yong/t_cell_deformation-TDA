@@ -3,6 +3,9 @@ import numpy as np
 
 import utils.data_reader as data_reader
 
+# --------------------------------------------------------------------------
+# SECTION A: NICEGUI GLOBALS
+# --------------------------------------------------------------------------
 # State to store our circles
 # [{
 # 'id': 0,
@@ -15,11 +18,13 @@ circles = []
 next_id = 1
 # Track which circle is being dragged
 dragging = None
-
 simulation_size_L = 43.0
+# Manual
 num_particles_to_spawn = 10
 num_particles = 0
+# File upload
 usingFirstContactTimes = False
+num_frames = 0
 
 
 def handle_mouse(e):
@@ -75,11 +80,18 @@ def spawn_particles():
 
     update_image()
 
+
 def add_particle():
     global next_id, circles, num_particles
-    
+
     circles.append(
-        {"id": next_id, "x": simulation_size_L / 2, "y": simulation_size_L / 2, "radius": 1, "color": "blue"}
+        {
+            "id": next_id,
+            "x": simulation_size_L / 2,
+            "y": simulation_size_L / 2,
+            "radius": 1,
+            "color": "blue",
+        }
     )
     next_id += 1
     num_particles = len(circles)
@@ -88,8 +100,11 @@ def add_particle():
 
 
 async def simulation_results_file_upload(e: events.UploadEventArguments):
+    global num_frames, particle_data
     particle_data_string = await e.file.text()
-    particle_data, num_frames = data_reader.read_particle_data_from_string(particle_data_string)
+    particle_data, num_frames = data_reader.read_particle_data_from_string(
+        particle_data_string
+    )
     print(particle_data)
     print(num_frames)
 
@@ -147,7 +162,7 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                         ui.button("Spawn Particles", on_click=spawn_particles).classes(
                             "w-full py-2"
                         ).props("elevated color=primary")
-                        
+
                         ui.button("Add Particles", on_click=add_particle).classes(
                             "w-full py-2"
                         ).props("elevated color=primary")
@@ -163,13 +178,20 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                             label="Upload Results.txt",
                         ).classes("w-full").props("accept=.txt")
 
-                        firstContactTimesCheckbox = ui.checkbox("Use First Contact Times").bind_value(globals(), "usingFirstContactTimes")
+                        firstContactTimesCheckbox = ui.checkbox(
+                            "Use First Contact Times"
+                        ).bind_value(globals(), "usingFirstContactTimes")
 
                         ui.upload(
                             on_upload=simulation_contacts_file_upload,
                             label="Upload First_contact_times.txt",
-                        ).bind_visibility_from(firstContactTimesCheckbox, "value"
-                        ).classes("w-full").props("accept=.txt")
+                        ).bind_visibility_from(
+                            firstContactTimesCheckbox, "value"
+                        ).classes(
+                            "w-full"
+                        ).props(
+                            "accept=.txt"
+                        )
 
 
 ui.run()

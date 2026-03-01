@@ -27,4 +27,4 @@ def read_particle_data_from_string(particle_string):
                     float(line_split[5]),
                 ]
             )
-    return frame_array, num_frames
+    return frame_array

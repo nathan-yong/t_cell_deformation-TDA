@@ -24,8 +24,9 @@ num_particles_to_spawn = 10
 num_particles = 0
 # File upload
 usingFirstContactTimes = False
+particle_data = None
 num_frames = 0
-selected_frame = 0
+selected_frame = 1
 
 
 def handle_mouse(e):
@@ -103,27 +104,39 @@ def add_particle():
 async def simulation_results_file_upload(e: events.UploadEventArguments):
     global num_frames, particle_data
     particle_data_string = await e.file.text()
-    particle_data, num_frames = data_reader.read_particle_data_from_string(
+    particle_data = data_reader.read_particle_data_from_string(
         particle_data_string
     )
+    num_frames = len(particle_data)
+    simulation_load_number.max = num_frames
+    simulation_load_slider._props['max'] = num_frames
+    simulation_load_slider.update()
     display_loaded_frame()
+
 
 def display_loaded_frame():
     global selected_frame, particle_data, next_id, circles, num_particles
+    selected_frame = int(selected_frame)
     circles.clear()
-    for p in particle_data[selected_frame]:
+    if particle_data is None:
+        return
+    for p in particle_data[selected_frame - 1]:
+        color = "blue"
+        if p[0] == 1:
+            color = "green"
         circles.append(
             {
                 "id": p[0],
                 "x": p[1],
                 "y": p[2],
                 "radius": p[5],
-                "color": "blue",
+                "color": color,
             }
         )
-    next_id = max([c["id"] for c in circles]) + 1 
+    next_id = max([c["id"] for c in circles]) + 1
     num_particles = len(circles)
     update_image()
+
 
 def simulation_contacts_file_upload(e):
     print(e.file.name)
@@ -133,7 +146,7 @@ def update_image():
     # Generate SVG content based on the circles list
     content = ""
     for c in circles:
-        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="rgba(0, 0, 255, 0.4)" stroke="{c["color"]}" stroke-width="0.1" />'
+        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="{c["color"]}" fill-opacity="0.4" stroke="{c["color"]}" stroke-width="0.1" />'
     ii.content = content
 
 
@@ -208,6 +221,19 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                         ).props(
                             "accept=.txt"
                         )
+
+                        with ui.card().classes("w-full"):
+                            ui.label("Frame").classes("font-bold")
+                            simulation_load_number = ui.number(
+                                value=1, min=1, max=num_frames, step=1, format="%i"
+                            ).bind_value(globals(), "selected_frame").on(
+                                "update:model-value", display_loaded_frame
+                            )
+                            simulation_load_slider = ui.slider(min=1, max=num_frames, value=1).bind_value(
+                                globals(), "selected_frame"
+                            ).on("update:model-value", display_loaded_frame).classes(
+                                "w-full"
+                            )
 
 
 ui.run()

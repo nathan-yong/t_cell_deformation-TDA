@@ -1,7 +1,10 @@
 from nicegui import ui, events
 import numpy as np
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 import utils.data_reader as data_reader
+import tda.alpha_complexes as alpha_complexes
 
 # --------------------------------------------------------------------------
 # SECTION A: NICEGUI GLOBALS
@@ -100,6 +103,12 @@ def add_particle():
 
     update_image()
 
+def update_image():
+    # Generate SVG content based on the circles list
+    content = ""
+    for c in circles:
+        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="{c["color"]}" fill-opacity="0.4" stroke="{c["color"]}" stroke-width="0.1" />'
+    ii.content = content
 
 async def simulation_results_file_upload(e: events.UploadEventArguments):
     global num_frames, particle_data
@@ -142,12 +151,6 @@ def simulation_contacts_file_upload(e):
     print(e.file.name)
 
 
-def update_image():
-    # Generate SVG content based on the circles list
-    content = ""
-    for c in circles:
-        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="{c["color"]}" fill-opacity="0.4" stroke="{c["color"]}" stroke-width="0.1" />'
-    ii.content = content
 
 
 # UI Layout
@@ -166,6 +169,21 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
             cross=False,
         ).classes("w-max-full h-full aspect-square border-4 border-black")
         ii.style("background-color: #ddd;")
+    
+    with ui.column().classes("flex-[3] h-full items-center justify-between p-4"):
+        with ui.row().classes("w-full items-center justify-start gap-4"):
+            ui.label("Analysis").classes("text-lg font-bold")
+            with ui.card().classes("w-full h-auto shadow-lg p-0"):
+                with ui.card().classes("w-full h-auto shadow-lg p-0"):
+                    ui.label("Alpha Complex Visualization").classes("font-bold")
+                    ui.plotly(alpha_complexes.delunauy_plotly_visualization([[0,0]])).classes('w-full h-40')
+                with ui.card().classes("w-full h-auto shadow-lg p-0"):
+                    with ui.row().classes("w-full items-center justify-start gap-4"):
+                        with ui.pyplot():
+                            # Example plot (replace with actual alpha complex analysis results)
+                            plt.plot([0, 1, 2], [0, 1, 0])
+                            plt.title("Persistence Diagram")
+                        
 
     with ui.column().classes("flex=[3] h-full items-center justify-start p-4"):
         with ui.card().classes("w-full h-auto shadow-lg p-0"):
@@ -173,6 +191,7 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
             with ui.tabs().classes("w-full border-b") as tabs:
                 ui.tab("Manual", icon="settings")
                 ui.tab("Upload", icon="file_upload")
+                ui.tab("Analysis", icon="analytics")
 
             with ui.tab_panels(tabs, value="Manual").classes("w-full bg-transparent"):
                 with ui.tab_panel("Manual"):
@@ -225,15 +244,29 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                         with ui.card().classes("w-full"):
                             ui.label("Frame").classes("font-bold")
                             simulation_load_number = ui.number(
-                                value=1, min=1, max=num_frames, step=1, format="%i"
+                                value=1, min=1, max=1, step=1, format="%i"
                             ).bind_value(globals(), "selected_frame").on(
                                 "update:model-value", display_loaded_frame
                             )
-                            simulation_load_slider = ui.slider(min=1, max=num_frames, value=1).bind_value(
+                            simulation_load_slider = ui.slider(min=1, max=1, value=1).bind_value(
                                 globals(), "selected_frame"
                             ).on("update:model-value", display_loaded_frame).classes(
                                 "w-full"
                             )
+                            
+                with ui.tab_panel("Analysis"):
+                    with ui.column().classes("gap-4 items-center"):
+                        ui.label("Select Analysis").classes(
+                            "text-lg font-bold self-start"
+                        )
+                        analysis_selection = ["Alpha Complexes", "Euclidean Distance Transform"]
+                        analysis_selector = ui.select(analysis_selection, value=analysis_selection[0]).classes("w-full")
+
+                        with ui.card().classes("w-full").bind_visibility_from(analysis_selector, "value", value="Alpha Complexes"):
+                            ui.label("Alpha Complexes Analysis").classes("font-bold")
+                            ui.button("Run Alpha Complexes").classes(
+                                "w-full py-2"
+                            ).props("elevated color=primary")
 
 
 ui.run()

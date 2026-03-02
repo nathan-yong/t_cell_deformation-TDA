@@ -122,6 +122,8 @@ async def simulation_results_file_upload(e: events.UploadEventArguments):
     simulation_load_slider.update()
     display_loaded_frame()
 
+def simulation_contacts_file_upload(e):
+    print(e.file.name)
 
 def display_loaded_frame():
     global selected_frame, particle_data, next_id, circles, num_particles
@@ -146,9 +148,24 @@ def display_loaded_frame():
     num_particles = len(circles)
     update_image()
 
+def run_alpha_complexes_analysis():
+    if not circles:
+        return
+    coords = np.array([[c["x"], c["y"]] for c in circles])
+    fig = alpha_complexes.delaunay_plotly_visualization(coords)
+    ac_visualizer.update_figure(fig)
+    dim0_pd_birth_death, dim1_pd_birth_death = alpha_complexes.calculate_alpha_complex_pd(coords)
+    dim0_pd_x_list = dim0_pd_birth_death[:, 0]
+    dim0_pd_y_list = dim0_pd_birth_death[:, 1]
+    dim1_pd_x_list = dim1_pd_birth_death[:, 0]
+    dim1_pd_y_list = dim1_pd_birth_death[:, 1]
+    dim0_pd_ax.clear()
+    dim0_pd_ax.plot(dim0_pd_birth_death[:, 0], dim0_pd_birth_death[:, 1], 'o')
+    dim1_pd_ax.clear()
+    dim1_pd_ax.plot(dim1_pd_birth_death[:, 0], dim1_pd_birth_death[:, 1], 'o')
 
-def simulation_contacts_file_upload(e):
-    print(e.file.name)
+    dim0_pd_plot.update()
+    dim1_pd_plot.update()
 
 
 
@@ -177,20 +194,30 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                 ii.style("background-color: #ddd;")
 
             with ui.tab_panel("Analysis Visualization").classes("w-full h-full items-center justify-center"):
-                ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [2,4]]))).classes('w-max-full h-full aspect-square')
+                ac_visualizer = ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [2,4]]))).classes('w-max-full h-full aspect-square')
 
             with ui.tab_panel("Persistence Diagrams").classes("w-full h-full items-center justify-center"):
                 with ui.row().classes("w-full gap-4 no-wrap items-center justify-center"):
                     with ui.card().classes("w-auto h-auto shadow-lg items-center p-4"):
-                        with ui.pyplot():
+                        with ui.pyplot(close=False) as dim0_pd_plot:
                             # Example plot (replace with actual alpha complex analysis results)
-                            plt.plot([0, 1, 2], [0, 1, 0])
-                            plt.title("Persistence Diagram Betti 0")
+                            dim0_pd_ax = dim0_pd_plot.fig.add_subplot()
+                            dim0_pd_ax.set_xlabel("Birth")
+                            dim0_pd_ax.set_ylabel("Death")
+                            dim0_pd_ax.set_title("Persistence Diagram Betti 0")
+                            dim0_pd_x_list = [0, 1, 2]
+                            dim0_pd_y_list = [0, 1, 0] 
+                            dim0_pd_ax.plot(dim0_pd_x_list, dim0_pd_y_list, 'o')
                     with ui.card().classes("w-auto h-auto shadow-lg  items-center p-4"):
-                        with ui.pyplot():
+                        with ui.pyplot(close=False) as dim1_pd_plot:
                             # Example plot (replace with actual alpha complex analysis results)
-                            plt.plot([0, 1, 2], [0, 1, 0])
-                            plt.title("Persistence Diagram Betti 1")
+                            dim1_pd_ax = dim1_pd_plot.fig.add_subplot()
+                            dim1_pd_ax.set_xlabel("Birth")
+                            dim1_pd_ax.set_ylabel("Death")
+                            dim1_pd_ax.set_title("Persistence Diagram Betti 1")
+                            dim1_pd_x_list = [0, 1, 2]
+                            dim1_pd_y_list = [0, 1, 0] 
+                            dim1_pd_ax.plot(dim1_pd_x_list, dim1_pd_y_list, 'o')
             
     with ui.column().classes("flex=[3] h-full items-center justify-start p-4"):
         with ui.card().classes("w-full h-auto shadow-lg p-0"):
@@ -271,7 +298,7 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
 
                         with ui.card().classes("w-full").bind_visibility_from(analysis_selector, "value", value="Alpha Complexes"):
                             ui.label("Alpha Complexes Analysis").classes("font-bold")
-                            ui.button("Run Alpha Complexes").classes(
+                            ui.button("Run Alpha Complexes", on_click=run_alpha_complexes_analysis).classes(
                                 "w-full py-2"
                             ).props("elevated color=primary")
 

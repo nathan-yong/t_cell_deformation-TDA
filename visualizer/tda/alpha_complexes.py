@@ -28,7 +28,7 @@ def calculate_alpha_complex_pd(coordinates):
       dim0.append([birth, death])
     elif dim == 1:
       dim1.append([birth, death])
-  return dim0, dim1
+  return np.array(dim0), np.array(dim1)
 
 # Input one coordinate or list of coordinates
 def dist_to_yx(coordinate):

@@ -155,39 +155,43 @@ def simulation_contacts_file_upload(e):
 
 # UI Layout
 with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
-    with ui.column().classes("flex-[7] h-full items-center justify-center p-5"):
+    with ui.column().classes("flex-[7] h-full items-center justify-start p-5"):
+        with ui.tabs().classes("w-full border-b") as tabs:
+            ui.tab("Simulation", icon="play_arrow")
+            ui.tab("Analysis Visualization", icon="analytics")
+            ui.tab("Persistence Diagrams", icon="insights")
+        
+        with ui.tab_panels(tabs, value="Simulation").classes("w-full h-full bg-transparent"):
+            with ui.tab_panel("Simulation").classes("w-full h-full items-center justify-center"):
+                with ui.row():
+                    ui.label("Number of Particles: ")
+                    ui.label().bind_text_from(globals(), "num_particles")
 
-        with ui.row():
-            ui.label("Number of Particles: ")
-            ui.label().bind_text_from(globals(), "num_particles")
+                # Interactive Image Canvas
+                ii = ui.interactive_image(
+                    size=(simulation_size_L, simulation_size_L),
+                    on_mouse=handle_mouse,
+                    events=["mousedown", "mousemove", "mouseup"],
+                    cross=False,
+                ).classes("w-max-full h-full aspect-square border-4 border-black")
+                ii.style("background-color: #ddd;")
 
-        # Interactive Image Canvas
-        ii = ui.interactive_image(
-            size=(simulation_size_L, simulation_size_L),
-            on_mouse=handle_mouse,
-            events=["mousedown", "mousemove", "mouseup"],
-            cross=False,
-        ).classes("w-max-full h-full aspect-square border-4 border-black")
-        ii.style("background-color: #ddd;")
-    
-    with ui.column().classes("flex-[3] h-full items-center justify-between p-4"):
-        with ui.card().classes("w-full h-full shadow-lg p-0 items-center justify-between"):
-            ui.label("Analysis").classes("text-lg font-bold")
-            with ui.card().classes("w-full h-auto shadow-lg p-0"):
-                with ui.card().classes("w-full h-auto shadow-lg items-center p-4"):
-                    ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [1,3]]))).classes('w-full h-96')
-                with ui.card().classes("w-full h-auto shadow-lg  items-center p-4"):
-                    with ui.pyplot():
-                        # Example plot (replace with actual alpha complex analysis results)
-                        plt.plot([0, 1, 2], [0, 1, 0])
-                        plt.title("Persistence Diagram Betti 0")
-                with ui.card().classes("w-full h-auto shadow-lg items-center p-4"):
-                    with ui.pyplot():
-                        # Example plot (replace with actual alpha complex analysis results)
-                        plt.plot([0, 1, 2], [0, 1, 0])
-                        plt.title("Persistence Diagram Betti 1")
-                        
+            with ui.tab_panel("Analysis Visualization").classes("w-full h-full items-center justify-center"):
+                ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [2,4]]))).classes('w-max-full h-full aspect-square')
 
+            with ui.tab_panel("Persistence Diagrams").classes("w-full h-full items-center justify-center"):
+                with ui.row().classes("w-full gap-4 no-wrap items-center justify-center"):
+                    with ui.card().classes("w-auto h-auto shadow-lg items-center p-4"):
+                        with ui.pyplot():
+                            # Example plot (replace with actual alpha complex analysis results)
+                            plt.plot([0, 1, 2], [0, 1, 0])
+                            plt.title("Persistence Diagram Betti 0")
+                    with ui.card().classes("w-auto h-auto shadow-lg  items-center p-4"):
+                        with ui.pyplot():
+                            # Example plot (replace with actual alpha complex analysis results)
+                            plt.plot([0, 1, 2], [0, 1, 0])
+                            plt.title("Persistence Diagram Betti 1")
+            
     with ui.column().classes("flex=[3] h-full items-center justify-start p-4"):
         with ui.card().classes("w-full h-auto shadow-lg p-0"):
 

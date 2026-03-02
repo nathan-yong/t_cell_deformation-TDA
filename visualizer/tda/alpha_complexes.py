@@ -1,6 +1,7 @@
 import numpy as np
 import gudhi as gd
 import plotly.graph_objects as go
+import networkx as nx
 
 
 def calculate_alpha_complex_pd(coordinates):
@@ -57,42 +58,212 @@ def alpha_complexes_with_particle_coords(data_with_all_frames, realization_analy
     dim0_dist_measure_list.append(dim0_dist_measure)
     dim1_dist_measure_list.append(dim1_dist_measure)
   
-def delunauy_plotly_visualization(coordinates):
+def delaunay_plotly_visualization(coordinates):
+    # 1. Compute Alpha Complex
+    alpha_complex = gd.AlphaComplex(points=coordinates)
+    simplex_tree = alpha_complex.create_simplex_tree()
+
+    # Compute persistence
+    persistence = simplex_tree.persistence()
+
+    # Extract birth and death times for dimension 1
+    # persistence is a list of (dim, (birth, death))
+    dim1_birth_times = [p[1][0] for p in persistence if p[0] == 1]
+    dim1_death_times = [p[1][1] for p in persistence if p[0] == 1 and p[1][1] != float('inf')]
+
+    # 2. Extract Simplices
+    edges = []
+    triangles = []
+    filtrations = set()
+
+    for simplex, filtration in simplex_tree.get_filtration():
+        filtrations.add(filtration)
+        if len(simplex) == 2:
+            edges.append((simplex, filtration))
+        elif len(simplex) == 3:
+            triangles.append((simplex, filtration))
+
+    sorted_filtrations = sorted(list(filtrations))
+    if 0.0 not in sorted_filtrations:
+        sorted_filtrations.insert(0, 0.0)
+
+    alphas = [np.sqrt(f) for f in sorted_filtrations]
+
+    # 3. Create Figure
     fig = go.Figure()
 
-    # Add traces, one for each slider step
-    for step in np.arange(0, 5, 0.1):
-        fig.add_trace(
-            go.Scatter(
-                visible=False,
-                line=dict(color="#00CED1", width=6),
-                name="𝜈 = " + str(step),
-                x=np.arange(0, 10, 0.01),
-                y=np.sin(step * np.arange(0, 10, 0.01))))
+    # Trace 0: Points (always visible)
+    fig.add_trace(go.Scatter(
+        x=coordinates[:, 0],
+        y=coordinates[:, 1],
+        mode='markers',
+        marker=dict(size=5, color='black'),
+        name='Points'
+    ))
 
-    # Make 10th trace visible
-    fig.data[10].visible = True
+    # Trace 1: Alpha Complex Edges
+    fig.add_trace(go.Scatter(
+        x=[],
+        y=[],
+        mode='lines',
+        line=dict(color='blue', width=1),
+        name='Alpha Complex'
+    ))
 
-    # Create and add slider
-    steps = []
-    for i in range(len(fig.data)):
-        step = dict(
-            method="update",
-            args=[{"visible": [False] * len(fig.data)},
-                {"title": "Slider switched to step: " + str(i)}],  # layout attribute
-        )
-        step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
-        steps.append(step)
+    # Trace 2: Alpha Radius Circles
+    fig.add_trace(go.Scatter(
+        x=[],
+        y=[],
+        mode='lines',
+        line=dict(color='rgba(255, 0, 0, 0.3)', width=1),
+        name='Alpha Radius'
+    ))
 
+    # Trace 3: Birth Cycles (New Feature)
+    fig.add_trace(go.Scatter(
+        x=[],
+        y=[],
+        mode='lines',
+        line=dict(color='red', width=4),
+        name='New Cycle (Birth)'
+    ))
+
+    # Trace 4: Death Triangles (Feature Death)
+    fig.add_trace(go.Scatter(
+        x=[],
+        y=[],
+        mode='lines',
+        line=dict(color='green', width=4),
+        name='Filled Hole (Death)'
+    ))
+
+    # Precompute circle unit coordinates
+    theta = np.linspace(0, 2 * np.pi, 40)
+    unit_circle_x = np.cos(theta)
+    unit_circle_y = np.sin(theta)
+
+    # 4. Create Frames
+    frames = []
+
+    # Initialize graph for pathfinding (used for Births)
+    G = nx.Graph()
+    G.add_nodes_from(range(len(coordinates)))
+
+    # Helper to check if a value is in a list with tolerance
+    def is_in_list(val, target_list):
+        return any(np.isclose(val, b) for b in target_list)
+
+    # Process edges incrementally
+    edges.sort(key=lambda x: x[1])
+    current_edge_idx = 0
+
+    for i, (alpha, filt_val) in enumerate(zip(alphas, sorted_filtrations)):
+
+        # --- 1. Process Edges & Births ---
+        step_birth_x = []
+        step_birth_y = []
+
+        while current_edge_idx < len(edges) and edges[current_edge_idx][1] <= filt_val:
+            edge_simplex, edge_filt = edges[current_edge_idx]
+            u, v = edge_simplex
+
+            # Check for Birth: Is this edge creating a cycle at a birth time?
+            if is_in_list(edge_filt, dim1_birth_times):
+                if nx.has_path(G, u, v):
+                    path = nx.shortest_path(G, u, v)
+                    cycle_nodes = path + [u]
+                    cx = coordinates[cycle_nodes, 0]
+                    cy = coordinates[cycle_nodes, 1]
+                    step_birth_x.extend(cx)
+                    step_birth_x.append(None)
+                    step_birth_y.extend(cy)
+                    step_birth_y.append(None)
+
+            G.add_edge(u, v)
+            current_edge_idx += 1
+
+        # --- 2. Process Deaths (Triangles) ---
+        step_death_x = []
+        step_death_y = []
+
+        # Check triangles that appear exactly at this filtration step
+        # (We could optimize by sorting triangles, but N is small enough)
+        for tri_simplex, tri_filt in triangles:
+            if np.isclose(tri_filt, filt_val):
+                # Is this triangle killing a feature?
+                if is_in_list(tri_filt, dim1_death_times):
+                    # Highlight the triangle (3 edges)
+                    u, v, w = tri_simplex
+                    # Draw u->v->w->u
+                    tri_nodes = [u, v, w, u]
+                    tx = coordinates[tri_nodes, 0]
+                    ty = coordinates[tri_nodes, 1]
+                    step_death_x.extend(tx)
+                    step_death_x.append(None)
+                    step_death_y.extend(ty)
+                    step_death_y.append(None)
+
+        # --- 3. Construct Frame Data ---
+
+        # A. Wireframe (Edges)
+        vis_edge_x = []
+        vis_edge_y = []
+        # Re-scan edges currently in graph for visualization
+        # (Scanning up to current_edge_idx is safe because we sorted them)
+        for k in range(current_edge_idx):
+            p0 = coordinates[edges[k][0][0]]
+            p1 = coordinates[edges[k][0][1]]
+            vis_edge_x.extend([p0[0], p1[0], None])
+            vis_edge_y.extend([p0[1], p1[1], None])
+
+        # B. Circles
+        circ_x = []
+        circ_y = []
+        for point in coordinates:
+            cx = point[0] + alpha * unit_circle_x
+            cy = point[1] + alpha * unit_circle_y
+            circ_x.extend(cx)
+            circ_x.append(None)
+            circ_y.extend(cy)
+            circ_y.append(None)
+
+        frames.append(go.Frame(
+            data=[
+                go.Scatter(x=vis_edge_x, y=vis_edge_y),
+                go.Scatter(x=circ_x, y=circ_y),
+                go.Scatter(x=step_birth_x, y=step_birth_y),
+                go.Scatter(x=step_death_x, y=step_death_y)
+            ],
+            traces=[1, 2, 3, 4],
+            name=str(i)
+        ))
+
+    fig.frames = frames
+
+    # 5. Configure Slider
     sliders = [dict(
-        active=10,
-        currentvalue={"prefix": "Frequency: "},
+        active=0,
+        currentvalue={"prefix": "Alpha (Radius): "},
         pad={"t": 50},
-        steps=steps
+        steps=[dict(
+            method="animate",
+            args=[[str(i)], dict(mode="immediate", frame=dict(duration=0, redraw=True), transition=dict(duration=0))],
+            label=f"{a:.3f}"
+        ) for i, a in enumerate(alphas)]
     )]
 
     fig.update_layout(
-        sliders=sliders
+        sliders=sliders,
+        title="Interactive Alpha Complex: Births (Red) & Deaths (Green)",
+        xaxis_title="X Position",
+        yaxis_title="Y Position",
+        showlegend=True,
+        autosize=True,
+        width=None,
+        height=None,
+        margin=dict(l=20, r=20, t=40, b=80),
+        xaxis=dict(scaleanchor="y", scaleratio=1),
+        yaxis=dict(constrain='domain')
     )
 
     return fig

@@ -171,18 +171,21 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
         ii.style("background-color: #ddd;")
     
     with ui.column().classes("flex-[3] h-full items-center justify-between p-4"):
-        with ui.row().classes("w-full items-center justify-start gap-4"):
+        with ui.card().classes("w-full h-full shadow-lg p-0 items-center justify-between"):
             ui.label("Analysis").classes("text-lg font-bold")
             with ui.card().classes("w-full h-auto shadow-lg p-0"):
-                with ui.card().classes("w-full h-auto shadow-lg p-0"):
-                    ui.label("Alpha Complex Visualization").classes("font-bold")
-                    ui.plotly(alpha_complexes.delunauy_plotly_visualization([[0,0]])).classes('w-full h-40')
-                with ui.card().classes("w-full h-auto shadow-lg p-0"):
-                    with ui.row().classes("w-full items-center justify-start gap-4"):
-                        with ui.pyplot():
-                            # Example plot (replace with actual alpha complex analysis results)
-                            plt.plot([0, 1, 2], [0, 1, 0])
-                            plt.title("Persistence Diagram")
+                with ui.card().classes("w-full h-auto shadow-lg items-center p-4"):
+                    ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [1,3]]))).classes('w-full h-96')
+                with ui.card().classes("w-full h-auto shadow-lg  items-center p-4"):
+                    with ui.pyplot():
+                        # Example plot (replace with actual alpha complex analysis results)
+                        plt.plot([0, 1, 2], [0, 1, 0])
+                        plt.title("Persistence Diagram Betti 0")
+                with ui.card().classes("w-full h-auto shadow-lg items-center p-4"):
+                    with ui.pyplot():
+                        # Example plot (replace with actual alpha complex analysis results)
+                        plt.plot([0, 1, 2], [0, 1, 0])
+                        plt.title("Persistence Diagram Betti 1")
                         
 
     with ui.column().classes("flex=[3] h-full items-center justify-start p-4"):

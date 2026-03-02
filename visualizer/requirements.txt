@@ -16,6 +16,7 @@ docutils==0.22.4
 fastapi==0.133.1
 fonttools==4.61.1
 frozenlist==1.8.0
+gudhi==3.11.0
 h11==0.16.0
 httpcore==1.0.9
 httptools==0.7.1
@@ -30,6 +31,8 @@ MarkupSafe==3.0.3
 matplotlib==3.10.8
 multidict==6.7.1
 mypy_extensions==1.1.0
+narwhals==2.17.0
+networkx==3.6.1
 nicegui==3.8.0
 numpy==2.4.2
 orjson==3.11.7
@@ -37,6 +40,7 @@ packaging==26.0
 pathspec==1.0.4
 pillow==12.1.1
 platformdirs==4.9.2
+plotly==6.5.2
 propcache==0.4.1
 pydantic==2.12.5
 pydantic_core==2.41.5

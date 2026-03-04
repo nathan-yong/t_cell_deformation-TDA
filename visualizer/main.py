@@ -28,6 +28,8 @@ num_particles = 0
 # File upload
 usingFirstContactTimes = False
 particle_data = None
+contact_times_string = ""
+use_contact_times = False
 num_frames = 0
 selected_frame = 1
 
@@ -114,7 +116,7 @@ async def simulation_results_file_upload(e: events.UploadEventArguments):
     global num_frames, particle_data
     particle_data_string = await e.file.text()
     particle_data = data_reader.read_particle_data_from_string(
-        particle_data_string
+        particle_data_string, contact_times_string, use_contact_times
     )
     num_frames = len(particle_data)
     simulation_load_number.max = num_frames
@@ -122,8 +124,12 @@ async def simulation_results_file_upload(e: events.UploadEventArguments):
     simulation_load_slider.update()
     display_loaded_frame()
 
-def simulation_contacts_file_upload(e):
-    print(e.file.name)
+async def simulation_contacts_file_upload(e):
+    global contact_times_string, use_contact_times
+    contact_times_string = await e.file.text()
+    use_contact_times = True
+
+
 
 def display_loaded_frame():
     global selected_frame, particle_data, next_id, circles, num_particles
@@ -135,6 +141,8 @@ def display_loaded_frame():
         color = "blue"
         if p[0] == 1:
             color = "green"
+        elif p[6]:
+            color = "red"
         circles.append(
             {
                 "id": p[0],

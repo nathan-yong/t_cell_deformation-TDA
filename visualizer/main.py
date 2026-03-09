@@ -109,7 +109,7 @@ def update_image():
     # Generate SVG content based on the circles list
     content = ""
     for c in circles:
-        content += f'<circle cx="{c["x"]}" cy="{c["y"]}" r="{c["radius"]}" fill="{c["color"]}" fill-opacity="0.4" stroke="{c["color"]}" stroke-width="0.1" />'
+        content += f'<circle cx="{c["x"]}" cy="{simulation_size_L - c["y"]}" r="{c["radius"]}" fill="{c["color"]}" fill-opacity="0.4" stroke="{c["color"]}" stroke-width="0.1" />'
     ii.content = content
 
 async def simulation_results_file_upload(e: events.UploadEventArguments):

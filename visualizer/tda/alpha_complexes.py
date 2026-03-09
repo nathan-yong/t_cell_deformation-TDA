@@ -87,7 +87,7 @@ def delaunay_plotly_visualization(coordinates):
     if 0.0 not in sorted_filtrations:
         sorted_filtrations.insert(0, 0.0)
 
-    alphas = [np.sqrt(f) for f in sorted_filtrations]
+    alphas = [f for f in sorted_filtrations]
 
     # 3. Create Figure
     fig = go.Figure()
@@ -158,6 +158,7 @@ def delaunay_plotly_visualization(coordinates):
     current_edge_idx = 0
 
     for i, (alpha, filt_val) in enumerate(zip(alphas, sorted_filtrations)):
+        alpha = np.sqrt(alpha)
 
         # --- 1. Process Edges & Births ---
         step_birth_x = []

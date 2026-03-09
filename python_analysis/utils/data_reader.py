@@ -87,3 +87,55 @@ def read_particle_data(file_path, num_particles, number_of_timestamps, include_a
           timestamp_array[timestamp_index][current_particle_index][5] = float(line_split[5])
           current_particle_index += 1
   return timestamp_array
+
+def read_particle_data_with_contact_times(results_file_path, contact_times_files_path): 
+    num_frames = 0
+    contact_times_id = []
+    contact_times_time = []
+    with open(contact_times_files_path, 'r') as contact_times_file:
+        for line in contact_times_file:
+            line_split = line.strip().split()
+            contact_times_id.append(int(line_split[0]))
+            contact_times_time.append(float(line_split[1]))
+            
+            
+    frame_array = []
+    frame_data = []
+    current_time = 0
+    with open(results_file_path, 'r') as results_file:
+        for line in results_file:
+            line_split = line.strip().split()
+
+            # Start processing line
+            if line[0] == "t":
+                current_time = float(line_split[1])
+                if num_frames > 0:
+                    frame_array.append(frame_data.copy())
+                frame_data = []
+                num_frames += 1
+            else:
+                if int(line_split[0]) in contact_times_id and current_time >= contact_times_time[contact_times_id.index(int(line_split[0]))]: 
+                    frame_data.append(
+                        [
+                            float(line_split[0]),
+                            float(line_split[1]),
+                            float(line_split[2]),
+                            float(line_split[3]),
+                            float(line_split[4]),
+                            float(line_split[5]),
+                            True
+                        ]
+                    )
+                else:
+                    frame_data.append(
+                        [
+                            float(line_split[0]),
+                            float(line_split[1]),
+                            float(line_split[2]),
+                            float(line_split[3]),
+                            float(line_split[4]),
+                            float(line_split[5]),
+                            False
+                        ]
+                    )
+    return frame_array

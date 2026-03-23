@@ -58,7 +58,7 @@ def alpha_complexes_with_particle_coords(data_with_all_frames, realization_analy
     dim0_dist_measure_list.append(dim0_dist_measure)
     dim1_dist_measure_list.append(dim1_dist_measure)
   
-def delaunay_plotly_visualization(coordinates):
+def delaunay_plotly_visualization(coordinates, showRadius):
     # 1. Compute Alpha Complex
     alpha_complex = gd.AlphaComplex(points=coordinates)
     simplex_tree = alpha_complex.create_simplex_tree()
@@ -159,6 +159,8 @@ def delaunay_plotly_visualization(coordinates):
 
     for i, (alpha, filt_val) in enumerate(zip(alphas, sorted_filtrations)):
         alpha = np.sqrt(alpha)
+        if not showRadius:
+           alpha = 0
 
         # --- 1. Process Edges & Births ---
         step_birth_x = []
@@ -231,7 +233,7 @@ def delaunay_plotly_visualization(coordinates):
         frames.append(go.Frame(
             data=[
                 go.Scatter(x=vis_edge_x, y=vis_edge_y),
-                go.Scatter(x=circ_x, y=circ_y),
+                go.Scatter(x=circ_x, y=circ_y, fill="toself", fillcolor="rgba(31, 119, 180, 0.2)"),
                 go.Scatter(x=step_birth_x, y=step_birth_y),
                 go.Scatter(x=step_death_x, y=step_death_y)
             ],

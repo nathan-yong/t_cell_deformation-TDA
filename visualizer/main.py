@@ -33,6 +33,8 @@ use_contact_times = False
 num_frames = 0
 selected_frame = 1
 
+shouldShowRadius = True
+
 
 def handle_mouse(e):
     global dragging
@@ -160,7 +162,7 @@ def run_alpha_complexes_analysis():
     if not circles:
         return
     coords = np.array([[c["x"], c["y"]] for c in circles])
-    fig = alpha_complexes.delaunay_plotly_visualization(coords)
+    fig = alpha_complexes.delaunay_plotly_visualization(coords, shouldShowRadius)
     ac_visualizer.update_figure(fig)
     dim0_pd_birth_death, dim1_pd_birth_death = alpha_complexes.calculate_alpha_complex_pd(coords)
     dim0_pd_x_list = dim0_pd_birth_death[:, 0]
@@ -222,7 +224,7 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                 ii.style("background-color: #ddd;")
 
             with ui.tab_panel("Analysis Visualization").classes("w-full h-full items-center justify-center"):
-                ac_visualizer = ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [2,4]]))).classes('w-max-full h-full aspect-square')
+                ac_visualizer = ui.plotly(alpha_complexes.delaunay_plotly_visualization(np.array([[1,1], [2,1], [1,2], [2,4]]), shouldShowRadius)).classes('w-max-full h-full aspect-square')
 
             with ui.tab_panel("Persistence Diagrams").classes("w-full h-full items-center justify-center"):
                 with ui.row().classes("w-full gap-4 no-wrap items-center justify-center"):
@@ -317,6 +319,7 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
                             ui.button("Run Alpha Complexes", on_click=run_alpha_complexes_analysis).classes(
                                 "w-full py-2"
                             ).props("elevated color=primary")
+                            ui.checkbox("Show Radius in Visualization").bind_value(globals(), "shouldShowRadius")
 
 
 ui.run()

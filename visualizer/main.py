@@ -41,7 +41,7 @@ def handle_mouse(e):
     if e.type == "mousedown":
         for c in circles:
             # Simple distance check (radius is roughly 20 units)
-            if ((e.image_x - c["x"]) ** 2 + (e.image_y - c["y"]) ** 2) ** 0.5 < c[
+            if ((e.image_x - c["x"]) ** 2 + ((simulation_size_L - e.image_y) - c["y"]) ** 2) ** 0.5 < c[
                 "radius"
             ]:
                 dragging = c
@@ -50,7 +50,7 @@ def handle_mouse(e):
     # Mouse Move: Update coordinates if dragging
     if e.type == "mousemove" and dragging:
         dragging["x"] = e.image_x
-        dragging["y"] = e.image_y
+        dragging["y"] = (simulation_size_L - e.image_y)
         update_image()
 
     # Mouse Up: Stop dragging
@@ -167,13 +167,33 @@ def run_alpha_complexes_analysis():
     dim0_pd_y_list = dim0_pd_birth_death[:, 1]
     dim1_pd_x_list = dim1_pd_birth_death[:, 0]
     dim1_pd_y_list = dim1_pd_birth_death[:, 1]
-    dim0_pd_ax.clear()
-    dim0_pd_ax.plot(dim0_pd_birth_death[:, 0], dim0_pd_birth_death[:, 1], 'o')
-    dim1_pd_ax.clear()
-    dim1_pd_ax.plot(dim1_pd_birth_death[:, 0], dim1_pd_birth_death[:, 1], 'o')
 
-    dim0_pd_plot.update()
-    dim1_pd_plot.update()
+    with dim0_plot:
+        plt.clf()
+        plt.plot(dim0_pd_x_list, dim0_pd_y_list, 'o')
+        max_val = max(max(dim0_pd_x_list), max(dim0_pd_y_list))
+        min_val = min(min(dim0_pd_x_list), min(dim0_pd_y_list))
+        plt.plot([min_val, max_val], [min_val, max_val], color='red', linestyle='--', label='y=x (Diagonal)')
+        plt.xticks(dim0_pd_x_list)
+        plt.yticks(dim0_pd_y_list)
+        plt.xlabel('Birth Time')
+        plt.ylabel('Death Time')
+        plt.title('Dimension 0')
+        plt.grid(True)
+    dim0_plot.update()
+    with dim1_plot:
+        plt.clf()
+        plt.plot(dim1_pd_x_list, dim1_pd_y_list, 'o')
+        max_val = max(max(dim1_pd_x_list), max(dim1_pd_y_list))
+        min_val = min(min(dim1_pd_x_list), min(dim1_pd_y_list))
+        plt.plot([min_val, max_val], [min_val, max_val], color='red', linestyle='--', label='y=x (Diagonal)')
+        plt.xticks(dim1_pd_x_list)
+        plt.yticks(dim1_pd_y_list)
+        plt.xlabel('Birth Time')
+        plt.ylabel('Death Time')
+        plt.title('Dimension 1')
+        plt.grid(True)
+    dim1_plot.update()
 
 
 
@@ -207,25 +227,13 @@ with ui.row().classes("w-full h-[95vh] no-wrap items-stretch bg-slate-50 p-4"):
             with ui.tab_panel("Persistence Diagrams").classes("w-full h-full items-center justify-center"):
                 with ui.row().classes("w-full gap-4 no-wrap items-center justify-center"):
                     with ui.card().classes("w-auto h-auto shadow-lg items-center p-4"):
-                        with ui.pyplot(close=False) as dim0_pd_plot:
-                            # Example plot (replace with actual alpha complex analysis results)
-                            dim0_pd_ax = dim0_pd_plot.fig.add_subplot()
-                            dim0_pd_ax.set_xlabel("Birth")
-                            dim0_pd_ax.set_ylabel("Death")
-                            dim0_pd_ax.set_title("Persistence Diagram Betti 0")
-                            dim0_pd_x_list = [0, 1, 2]
-                            dim0_pd_y_list = [0, 1, 0] 
-                            dim0_pd_ax.plot(dim0_pd_x_list, dim0_pd_y_list, 'o')
+                        dim0_plot = ui.pyplot()
+                        with dim0_plot:
+                            plt.plot([0, 1, 2], [0, 1, 2], 'o')
                     with ui.card().classes("w-auto h-auto shadow-lg  items-center p-4"):
-                        with ui.pyplot(close=False) as dim1_pd_plot:
-                            # Example plot (replace with actual alpha complex analysis results)
-                            dim1_pd_ax = dim1_pd_plot.fig.add_subplot()
-                            dim1_pd_ax.set_xlabel("Birth")
-                            dim1_pd_ax.set_ylabel("Death")
-                            dim1_pd_ax.set_title("Persistence Diagram Betti 1")
-                            dim1_pd_x_list = [0, 1, 2]
-                            dim1_pd_y_list = [0, 1, 0] 
-                            dim1_pd_ax.plot(dim1_pd_x_list, dim1_pd_y_list, 'o')
+                        dim1_plot = ui.pyplot()
+                        with dim1_plot:
+                            plt.plot([0, 1, 2], [0, 1, 2], 'o')
             
     with ui.column().classes("flex=[3] h-full items-center justify-start p-4"):
         with ui.card().classes("w-full h-auto shadow-lg p-0"):
